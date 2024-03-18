@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Office Task Manager</title>
+<style>
+        #logo-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white; /* Set the background color to white */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1; /* Initially show the logo */
+            transition: opacity 1s ease; /* Smooth transition for opacity */
+        }
+        #company-logo {
+            max-width: 30%; /* Adjust the size of the logo as needed */
+            max-height: 80vh;
+        }
+
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+    }
+    .container {
+        width: 95%;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+        text-align: center;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        font-size: 12px;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    input[type="text"], select {
+        width: 100px;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    textarea {
+        width: 200px; /* Adjusted width */
+        height: 100px;
+        resize: none;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+    .popup {
+        display: none;
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 999;
+        width: 400px; /* Fixed width */
+        max-height: calc(100vh - 40px); /* Maximum height based on viewport height minus padding */
+        overflow-y: auto; /* Enable vertical scroll if content exceeds max-height */
+        word-wrap: break-word; /* Wrap long words */
+    }
+    .popup textarea {
+        width: 400px;
+        height: 200px;
+        resize: none;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+    .button-group {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .button-group button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+    .button-group button.delete-button {
+        background-color: #f44336; /* Red color for delete button */
+    }
+    .button-group button:hover {
+        background-color: #45a049;
+    }
+    .last-updated-container {
+        text-align: center;
+    }
+    .description-column {
+        width: 150px;
+    }
+    th:nth-child(9),
+    td:nth-child(9) {
+        width: 150px;
+    }
+    .last-updated-column {
+        display: none;
+    }
+    .priority-dropdown {
+        width: 100%;
+        margin: 0;
+    }
+    #taskDetailsPopup table {
+        width: 100%;
+    }
+    #taskDetailsPopup th {
+        background-color: #f2f2f2;
+    }
+    #taskDetailsPopup td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    #taskDetailsPopup table {
+        width: 400px;
+        table-layout: fixed;
+    }
+    #taskDetailsPopup td {
+        word-wrap: break-word;
+        max-width: 200px;
+    }
+
+    /* New styles for success message */
+    .success-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 500px;
+        height: 100px;
+        text-align: center;
+        line-height: 100px;
+        font-size: 18px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        display: none;
+    }
+
+    .success-message-delete {
+        background-color: #f44336; /* Red color for task deletion */
+        color: white;
+    }
+
+    .success-message-save {
+        background-color: #4CAF50; /* Green color for saving description */
+        color: white;
+    }
+
+    /* New column styles */
+    .action-column {
+        width: 150px;
+        text-align: center;
+    }
+
+    .view-task-button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+.view-task-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.view-task-button:hover {
+    background-color: #45a049;
+}
+
+button[disabled] {
+    background-color: #ddd; /* Change background color to gray */
+    color: #777; /* Change text color to a darker shade */
+}
+
+button.edit-button[disabled] {
+    background-color: #ccc; /* Change background color to a slightly darker gray */
+    color: #555; /* Change text color to a darker shade */
+}
+
+.completed-task {
+    background-color: #eee; /* Change background color to indicate completion */
+    color: #888; /* Change text color to indicate completion */
+}
+
+/* Remove the pointer-events rule for the "View Task" button */
+.completed-task button:not(.view-task-button),
+.completed-task select,
+.completed-task input {
+    pointer-events: none; /* Disable pointer events to prevent interaction */
+}
+    .search-bar-container {
+        float: right;
+	margin-top: 100px;
+        margin-bottom: 5px;
+	margin-right: 80px;
+    }
+
+    .search-input {
+        width: 200px;
+        padding: 40px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    .search-button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+
+    .search-button:hover {
+        background-color: #45a049;
+    }
+    .settings-icon {
+        position: absolute;
+        top: 122px;
+        right: 50px;
+        cursor: pointer;
+        font-size: 30px; /* Increased font size for larger dots */
+    }
+
+    .settings-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+
+</style>
+</head>
+<body>
+
+<div id="logo-container">
+    <img id="company-logo" src="file:///C:\Users\SAMBHAJI\Desktop\New folder (2)\images\febtech_logo_red.svg">
+</div>
+
+    <div class="search-bar-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search tasks">
+        <button onclick="applySearch()" class="search-button">Search</button>
+    </div>
+
+   <!-- Settings Icon (Three Dots) -->
+    <div class="settings-icon" onclick="openSettingsPopup()">
+        <!-- Three dots symbol -->
+        ...
+    </div>
+
+<!-- Popup for task details -->
+<div id="taskDetailsPopup" class="popup">
+    <div id="taskDetailsContent"></div>
+    <div class="button-group">
+        <button class="close" onclick="closeTaskDetailsPopup()">Close</button>
+        <button class="print-button" onclick="printTaskDetails()">Print</button> <!-- New print button -->
+    </div>
+</div>
+
+
+    <!-- Settings Popup -->
+    <div id="settingsPopup" class="settings-popup">
+        <button onclick="exportTasks()">Export Tasks</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;">
+        <button onclick="document.getElementById('importFile').click()">Import Tasks</button>
+        <button onclick="closeSettingsPopup()">Close</button>
+    </div>
+
+<div class="container">
+    <h1>Office Task Manager</h1>
+    <form id="taskForm">
+        <label for="title">Task Title:</label>
+        <input type="text" id="title" placeholder="Enter task title">
+        <label for="assignee">Assignee:</label>
+        <select id="assignee">
+            <option value="John">John</option>
+            <option value="Jane">Jane</option>
+            <option value="Doe">Doe</option>
+        </select>
+        <button type="button" onclick="addTask()">Add Task</button>
+    </form>
+    <table id="taskTable">
+        <thead>
+            <tr>
+                <th>Task No.</th>
+                <th>ID</th>
+                <th>Task Title</th>
+                <th>Assignee</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Start Date and Time</th>
+                <th>End Date and Time</th>
+                <th>Time Consumed</th>
+                <th>Priority</th>
+                <th>Task Add Date and Time</th>
+                <th class="action-column">Actions</th> <!-- New column -->
+                <th>View Task</th> <!-- New column -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Task rows will be dynamically added here -->
+        </tbody>
+    </table>
+</div>
+
+<div id="popup" class="popup">
+    <textarea id="popupDescription" placeholder="Enter task description"></textarea>
+    <div class="button-group">
+        <button onclick="saveDescription()">Save Description</button>
+        <button class="close" onclick="closePopup()">Close</button>
+    </div>
+    <div class="last-updated-container">
+        <span class="last-updated" id="lastUpdated"></span>
+    </div>
+</div>
+
+<!-- Popup for editing task details -->
+<div id="editTaskPopup" class="popup">
+    <label for="editTitle">Task Title:</label>
+    <input type="text" id="editTitle" placeholder="Enter task title"><br>
+    <label for="editAssignee">Assignee:</label>
+    <select id="editAssignee">
+        <option value="John">John</option>
+        <option value="Jane">Jane</option>
+        <option value="Doe">Doe</option>
+    </select><br>
+    <div class="button-group">
+        <button onclick="saveEditedTask()">Save</button>
+        <button class="delete-button" onclick="deleteTask()">Delete Task</button>
+        <button class="close" onclick="closeEditPopup()">Cancel</button>
+    </div>
+</div>
+
+<!-- Popup for task details -->
+<div id="taskDetailsPopup" class="popup">
+    <div id="taskDetailsContent"></div>
+    <div class="button-group">
+        <button class="close" onclick="closeTaskDetailsPopup()">Close</button>
+    </div>
+</div>
+
+<!-- Success message popup -->
+<div id="successMessage" class="success-message"></div>
+
+<script>
+    var currentTaskId;
+    var taskCount = 0;
+    var lastUpdatedTimes = {};
+
+    function addTask() {
+        taskCount++;
+        var title = document.getElementById("title").value;
+        var assignee = document.getElementById("assignee").value;
+        var status = "Not Working";
+        var id = generateID();
+        var addDateTime = new Date();
+
+        var table = document.getElementById("taskTable").getElementsByTagName('tbody')[0];
+        var row = table.insertRow(-1);
+        row.setAttribute("data-task-id", id);
+        var cell0 = row.insertCell(0);
+        var cell1 = row.insertCell(1);
+        var cell2 = row.insertCell(2);
+        var cell3 = row.insertCell(3);
+        var cell4 = row.insertCell(4);
+        var cell5 = row.insertCell(5);
+        var cell6 = row.insertCell(6);
+        var cell7 = row.insertCell(7);
+        var cell8 = row.insertCell(8);
+        var cell9 = row.insertCell(9);
+        var cell10 = row.insertCell(10);
+        var cell11 = row.insertCell(11);
+        var cell12 = row.insertCell(12); // Added for the "+" button
+
+        cell0.textContent = taskCount;
+        cell1.innerHTML = id;
+        cell2.innerHTML = title;
+        cell2.className = "task-title";
+        cell3.innerHTML = assignee;
+        cell3.className = "assignee";
+        cell4.innerHTML = '<button onclick="openPopup(\'' + id + '\')">View/Edit Description</button><textarea id="desc_' + id + '" style="display:none;" placeholder="Enter task description"></textarea>';
+        cell5.innerHTML = '<select id="status_' + id + '" onchange="updateStatus(\'' + id + '\', this.value)"><option value="Not Working">Not Working</option><option value="Working">Working</option><option value="Completed">Completed</option></select>';
+        cell6.innerHTML = '<span id="start_' + id + '"></span>';
+        cell7.innerHTML = '<span id="end_' + id + '"></span>';
+        cell8.innerHTML = '<span id="timeConsumed_' + id + '"></span>';
+        cell9.innerHTML = '<select class="priority-dropdown" id="priority_' + id + '" onchange="changePriority(\'' + id + '\')"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option><option value="Extremely High">Extremely High</option></select>';
+        cell10.textContent = formatDate(addDateTime) + ' ' + formatTime(addDateTime);
+        cell11.innerHTML = '<button onclick="openEditPopup(\'' + id + '\')">Edit</button>'; // Moved the edit button back to the action column
+        cell12.innerHTML = '<button class="view-task-button" onclick="showTaskDetailsPopup(\'' + id + '\')">+</button>'; // Added the "+" button to the new column
+    }
+
+function openEditPopup(taskId) {
+    currentTaskId = taskId; // Store the current task ID
+    var taskRow = document.querySelector('tr[data-task-id="' + taskId + '"]');
+    var taskTitle = taskRow.querySelector('.task-title').textContent;
+    var assignee = taskRow.querySelector('.assignee').textContent;
+    document.getElementById('editTitle').value = taskTitle;
+    document.getElementById('editAssignee').value = assignee;
+
+    // Check if the task is completed
+    var status = taskRow.querySelector('select').value;
+    if (status === "Completed") {
+        // If the task is completed, disable the edit button
+        document.getElementById('editTaskPopup').querySelector('button').disabled = true;
+    } else {
+        // If the task is not completed, enable the edit button
+        document.getElementById('editTaskPopup').querySelector('button').disabled = false;
+    }
+    
+    var editTaskPopup = document.getElementById("editTaskPopup");
+    editTaskPopup.style.display = "block";
+}
+
+    function openPopup(taskId) {
+        currentTaskId = taskId;
+        var popup = document.getElementById("popup");
+        popup.style.display = "block";
+        var description = document.getElementById("popupDescription");
+        var cell = document.getElementById("desc_" + taskId);
+        var descriptionText = cell.value.replace(/#>/g, '⦿');
+        description.value = descriptionText;
+        if (lastUpdatedTimes[taskId]) {
+            document.getElementById("lastUpdated").textContent = "Last updated: " + lastUpdatedTimes[taskId];
+        } else {
+            document.getElementById("lastUpdated").textContent = "Last updated: Not available";
+        }
+    }
+
+    function applySearch() {
+        var searchInput = document.getElementById("searchInput").value.toLowerCase();
+        var rows = document.getElementById("taskTable").getElementsByTagName("tbody")[0].rows;
+
+        for (var i = 0; i < rows.length; i++) {
+            var title = rows[i].querySelector(".task-title").textContent.toLowerCase();
+
+            if (title.includes(searchInput)) {
+                rows[i].style.display = "";
+            } else {
+                rows[i].style.display = "none";
+            }
+        }
+    }
+
+
+    function saveDescription() {
+        var description = document.getElementById("popupDescription").value;
+        var cell = document.getElementById("desc_" + currentTaskId);
+        cell.value = description;
+        closePopup();
+        var now = new Date();
+        lastUpdatedTimes[currentTaskId] = formatDate(now) + " " + formatTime(now);
+        document.getElementById("lastUpdated").textContent = "Last updated: " + lastUpdatedTimes[currentTaskId];
+
+        // Show success message for saving description
+        saveDescriptionSuccessMessage();
+    }
+
+    function closePopup() {
+        var popup = document.getElementById("popup");
+        popup.style.display = "none";
+        var description = document.getElementById("popupDescription");
+        description.value = "";
+    }
+
+    function openEditPopup(taskId) {
+        currentTaskId = taskId; // Store the current task ID
+        var taskRow = document.querySelector('tr[data-task-id="' + taskId + '"]');
+        var taskTitle = taskRow.querySelector('.task-title').textContent;
+        var assignee = taskRow.querySelector('.assignee').textContent;
+        document.getElementById('editTitle').value = taskTitle;
+        document.getElementById('editAssignee').value = assignee;
+        var editTaskPopup = document.getElementById("editTaskPopup");
+        editTaskPopup.style.display = "block";
+    }
+
+    function deleteTask() {
+        if (confirm("Are you sure you want to delete this task?")) {
+            var taskRow = document.querySelector('tr[data-task-id="' + currentTaskId + '"]');
+            taskRow.remove();
+            closeEditPopup();
+            // Show success message for task deletion
+            deleteTaskSuccessMessage();
+        }
+    }
+
+    function closeEditPopup() {
+        var editTaskPopup = document.getElementById("editTaskPopup");
+        editTaskPopup.style.display = "none";
+    }
+
+    function saveEditedTask() {
+        var editedTitle = document.getElementById('editTitle').value;
+        var editedAssignee = document.getElementById('editAssignee').value;
+        var taskRow = document.querySelector('tr[data-task-id="' + currentTaskId + '"]');
+        taskRow.querySelector('.task-title').textContent = editedTitle;
+        taskRow.querySelector('.assignee').textContent = editedAssignee;
+        closeEditPopup();
+    }
+function showTaskDetailsPopup(taskId) {
+    var taskDetailsPopup = document.getElementById("taskDetailsPopup");
+    var taskDetailsContent = document.getElementById("taskDetailsContent");
+
+    var taskDescription = document.getElementById("desc_" + taskId).value.replace(/\n/g, '<br>');
+    var taskAddDateTime = document.querySelector('tr[data-task-id="' + taskId + '"] td:nth-child(11)').textContent;
+
+    var lastUpdated = lastUpdatedTimes[taskId] ? lastUpdatedTimes[taskId] : "Not available";
+
+    taskDetailsContent.innerHTML = "<h3>Task Details</h3>" +
+        "<table>" +
+        "<tr><td>ID:</td><td>" + taskId + "</td></tr>" +
+        "<tr><td>Title:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] .task-title').textContent + "</td></tr>" +
+        "<tr><td>Assignee:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] .assignee').textContent + "</td></tr>" +
+        "<tr><td>Description:</td><td>" + taskDescription + "</td></tr>" +
+        "<tr><td>Status:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] select').value + "</td></tr>" +
+        "<tr><td>Priority:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] .priority-dropdown').value + "</td></tr>" +
+        "<tr><td>Start Date and Time:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] #start_' + taskId).textContent + "</td></tr>" +
+        "<tr><td>End Date and Time:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] #end_' + taskId).textContent + "</td></tr>" +
+        "<tr><td>Time Consumed:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] #timeConsumed_' + taskId).textContent + "</td></tr>" +
+        "<tr><td>Task Add Date and Time:</td><td>" + taskAddDateTime + "</td></tr>" +
+        "<tr><td>Description Last updated:</td><td>" + lastUpdated + "</td></tr>" +
+        "</table>";
+
+    taskDetailsPopup.style.display = "block";
+}
+
+
+    function closeTaskDetailsPopup() {
+        var taskDetailsPopup = document.getElementById("taskDetailsPopup");
+        taskDetailsPopup.style.display = "none";
+    }
+
+    function generateID() {
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var id = "";
+        for (var i = 0; i < 10; i++) {
+            id += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return id;
+    }
+
+function updateStatus(taskId, status) {
+    var statusCell = document.getElementById("status_" + taskId);
+    statusCell.value = status;
+
+    var now = new Date();
+    var date = formatDate(now);
+    var time = formatTime(now);
+
+    var taskRow = document.querySelector('tr[data-task-id="' + taskId + '"]');
+    var viewTaskButton = taskRow.querySelector('.view-task-button'); // Select the "View Task" button
+
+    if (status === "Completed") {
+        taskRow.classList.add("completed-task");
+        // Disable all interactive elements in the row except for the "View Task" button
+        var interactiveElements = taskRow.querySelectorAll("button:not(.view-task-button), select, input");
+        interactiveElements.forEach(function(element) {
+            element.disabled = true;
+        });
+        // Enable the "View Task" button
+        viewTaskButton.disabled = false;
+    } else {
+        taskRow.classList.remove("completed-task");
+        // Enable all interactive elements in the row
+        var interactiveElements = taskRow.querySelectorAll("button, select, input");
+        interactiveElements.forEach(function(element) {
+            element.disabled = false;
+        });
+
+    }
+        if (status === "Working") {
+            document.getElementById("start_" + taskId).textContent = date + " " + time;
+        } else if (status === "Completed") {
+            document.getElementById("end_" + taskId).textContent = date + " " + time;
+
+            var startTime = document.getElementById("start_" + taskId).textContent;
+            var endTime = document.getElementById("end_" + taskId).textContent;
+            var timeConsumed = calculateTimeConsumed(startTime, endTime);
+            document.getElementById("timeConsumed_" + taskId).textContent = timeConsumed;
+        }
+    }
+
+    function calculateTimeConsumed(startTime, endTime) {
+        var start = new Date(startTime);
+        var end = new Date(endTime);
+        var timeDiff = Math.abs(end - start);
+
+        var days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        timeDiff -= days * (1000 * 60 * 60 * 24);
+        var hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        timeDiff -= hours * (1000 * 60 * 60);
+        var minutes = Math.floor(timeDiff / (1000 * 60));
+
+        return days + " days, " + hours + " hours, " + minutes + " minutes";
+    }
+
+    function formatDate(date) {
+        var dd = String(date.getDate()).padStart(2, '0');
+        var mm = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
+        var yyyy = date.getFullYear();
+
+        return yyyy + '-' + mm + '-' + dd;
+    }
+
+    function formatTime(date) {
+        var hh = String(date.getHours()).padStart(2, '0');
+        var mm = String(date.getMinutes()).padStart(2, '0');
+        var ss = String(date.getSeconds()).padStart(2, '0');
+
+        return hh + ':' + mm + ':' + ss;
+    }
+
+    function changePriority(taskId) {
+        var priority = document.getElementById("priority_" + taskId).value;
+        console.log("Priority changed for task ID " + taskId + " to " + priority);
+    }
+
+    // Function to open settings popup
+    function openSettingsPopup() {
+        var settingsPopup = document.getElementById("settingsPopup");
+        settingsPopup.style.display = "block";
+    }
+
+    // Function to close settings popup
+    function closeSettingsPopup() {
+        var settingsPopup = document.getElementById("settingsPopup");
+        settingsPopup.style.display = "none";
+    }
+
+    // Fade out and remove the logo container after 2 seconds
+    setTimeout(function() {
+        var logoContainer = document.getElementById('logo-container');
+        logoContainer.style.opacity = 0;
+        setTimeout(function() {
+            logoContainer.remove();
+        }, 1000); // Wait for the fade out transition to complete
+    }, 2000);
+
+// Function to show task details popup
+function showTaskDetailsPopup(taskId) {
+    var taskDetailsPopup = document.getElementById("taskDetailsPopup");
+    var taskDetailsContent = document.getElementById("taskDetailsContent");
+
+    var taskDescription = document.getElementById("desc_" + taskId).value.replace(/\n/g, '<br>');
+    var taskAddDateTime = document.querySelector('tr[data-task-id="' + taskId + '"] td:nth-child(11)').textContent;
+
+    var lastUpdated = lastUpdatedTimes[taskId] ? lastUpdatedTimes[taskId] : "Not available";
+
+    taskDetailsContent.innerHTML = "<h3>Task Details</h3>" +
+        "<table>" +
+        "<tr><td>ID:</td><td>" + taskId + "</td></tr>" +
+        "<tr><td>Title:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] .task-title').textContent + "</td></tr>" +
+        "<tr><td>Assignee:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] .assignee').textContent + "</td></tr>" +
+        "<tr><td>Description:</td><td>" + taskDescription + "</td></tr>" +
+        "<tr><td>Status:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] select').value + "</td></tr>" +
+        "<tr><td>Priority:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] .priority-dropdown').value + "</td></tr>" +
+        "<tr><td>Start Date and Time:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] #start_' + taskId).textContent + "</td></tr>" +
+        "<tr><td>End Date and Time:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] #end_' + taskId).textContent + "</td></tr>" +
+        "<tr><td>Time Consumed:</td><td>" + document.querySelector('tr[data-task-id="' + taskId + '"] #timeConsumed_' + taskId).textContent + "</td></tr>" +
+        "<tr><td>Task Add Date and Time:</td><td>" + taskAddDateTime + "</td></tr>" +
+        "<tr><td>Description Last updated:</td><td>" + lastUpdated + "</td></tr>" +
+        "</table>";
+
+    taskDetailsPopup.style.display = "block";
+}
+
+// Function to print task details
+function printTaskDetails() {
+    var taskDetailsContent = document.getElementById("taskDetailsContent").innerHTML;
+    var printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Task Details</title>');
+    printWindow.document.write('<style>body {font-family: Arial, sans-serif;} .modal {display: block; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(0, 0, 0, 0.5); z-index: 999; overflow: auto;} .modal-content {background-color: #fefefe; margin: 20px auto; padding: 20px; border: 1px solid #888; width: 80%;} table {border-collapse: collapse; width: 100%;} th, td {border: 1px solid #dddddd; text-align: left; padding: 8px;} th {background-color: #f2f2f2;} img.logo {display: block; margin: 0 auto;} .disclaimer {margin-top: 20px; font-size: 12px; font-weight: bold; color: red; text-align: center;}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write('<div class="modal"><div class="modal-content">');
+    // Include the company logo with an absolute file path
+    printWindow.document.write('<img src="C:\\Users\\SAMBHAJI\\Desktop\\New folder (2)\\images\\febtech_logo_red.svg" alt="Company Logo" class="logo" style="width: 200px; height: auto;">');
+    printWindow.document.write('<h3 style="text-align: center;">Task Details</h3>');
+    printWindow.document.write('<table>');
+    printWindow.document.write(taskDetailsContent);
+    printWindow.document.write('</table>');
+    // Add the shorter disclaimer message
+    printWindow.document.write('<p class="disclaimer">Confidential information. Unauthorized use or distribution prohibited and may be unlawful. Handle with care. Any dissemination, copying, disclosure, or distribution without permission strictly prohibited. Violators may be subject to legal action. © Febtech Industries. All rights reserved.</p>');
+    printWindow.document.write('</div></div>');
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+}
+
+    // Function to show success message for task deletion
+    function deleteTaskSuccessMessage() {
+        var successMessage = document.getElementById("successMessage");
+        successMessage.textContent = "Task deleted successfully";
+        successMessage.className = "success-message success-message-delete";
+        successMessage.style.display = "block";
+
+        // Hide success message after 3 seconds
+        setTimeout(function() {
+            successMessage.style.display = "none";
+        }, 3000);
+    }
+
+    // Function to show success message for saving description
+    function saveDescriptionSuccessMessage() {
+        var successMessage = document.getElementById("successMessage");
+        successMessage.textContent = "Description saved successfully";
+        successMessage.className = "success-message success-message-save";
+        successMessage.style.display = "block";
+
+        // Hide success message after 3 seconds
+        setTimeout(function() {
+            successMessage.style.display = "none";
+        }, 3000);
+    }
+
+    // Function to handle clicks outside of the popups
+    window.onclick = function(event) {
+        var popups = document.getElementsByClassName("popup");
+        for (var i = 0; i < popups.length; i++) {
+            var popup = popups[i];
+            if (event.target === popup) {
+                popup.style.display = "none";
+            }
+        }
+    }
+
+    // Function to export tasks as JSON
+    function exportTasks() {
+        var tasks = [];
+        var taskRows = document.querySelectorAll('#taskTable tbody tr');
+        taskRows.forEach(function(row) {
+            var task = {
+                taskNumber: row.cells[0].textContent,
+                id: row.cells[1].textContent,
+                title: row.cells[2].textContent,
+                assignee: row.cells[3].textContent,
+                description: row.cells[4].querySelector('textarea').value,
+                status: row.cells[5].querySelector('select').value,
+                startDate: row.cells[6].querySelector('span').textContent,
+                endDate: row.cells[7].querySelector('span').textContent,
+                timeConsumed: row.cells[8].querySelector('span').textContent,
+                priority: row.cells[9].querySelector('select').value,
+                addDateTime: row.cells[10].textContent
+            };
+            tasks.push(task);
+        });
+
+        var jsonData = JSON.stringify(tasks);
+        var blob = new Blob([jsonData], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'tasks.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Function to import tasks from JSON
+    document.getElementById('importFile').addEventListener('change', function(event) {
+        var file = event.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var jsonData = reader.result;
+                try {
+                    var tasks = JSON.parse(jsonData);
+                    tasks.forEach(function(task) {
+                        // Create table row and cells and populate them with task data
+                        var table = document.getElementById('taskTable').getElementsByTagName('tbody')[0];
+                        var row = table.insertRow(-1);
+                        row.setAttribute("data-task-id", task.id);
+                        var cell0 = row.insertCell(0);
+                        var cell1 = row.insertCell(1);
+                        var cell2 = row.insertCell(2);
+                        var cell3 = row.insertCell(3);
+                        var cell4 = row.insertCell(4);
+                        var cell5 = row.insertCell(5);
+                        var cell6 = row.insertCell(6);
+                        var cell7 = row.insertCell(7);
+                        var cell8 = row.insertCell(8);
+                        var cell9 = row.insertCell(9);
+                        var cell10 = row.insertCell(10);
+                        var cell11 = row.insertCell(11);
+                        var cell12 = row.insertCell(12); // Added for the "+" button
+
+                        cell0.textContent = task.taskNumber;
+                        cell1.innerHTML = task.id;
+                        cell2.innerHTML = task.title;
+                        cell2.className = "task-title";
+                        cell3.innerHTML = task.assignee;
+                        cell3.className = "assignee";
+                        cell4.innerHTML = '<button onclick="openPopup(\'' + task.id + '\')">View/Edit Description</button><textarea id="desc_' + task.id + '" style="display:none;" placeholder="Enter task description">' + task.description + '</textarea>';
+                        cell5.innerHTML = '<select id="status_' + task.id + '" onchange="updateStatus(\'' + task.id + '\', this.value)"><option value="Not Working">Not Working</option><option value="Working">Working</option><option value="Completed">Completed</option></select>';
+                        cell5.querySelector('select').value = task.status;
+                        cell6.innerHTML = '<span id="start_' + task.id + '">' + task.startDate + '</span>';
+                        cell7.innerHTML = '<span id="end_' + task.id + '">' + task.endDate + '</span>';
+                        cell8.innerHTML = '<span id="timeConsumed_' + task.id + '">' + task.timeConsumed + '</span>';
+                        cell9.innerHTML = '<select class="priority-dropdown" id="priority_' + task.id + '" onchange="changePriority(\'' + task.id + '\')"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option><option value="Extremely High">Extremely High</option></select>';
+                        cell9.querySelector('select').value = task.priority;
+                        cell10.textContent = task.addDateTime;
+                        cell11.innerHTML = '<button onclick="openEditPopup(\'' + task.id + '\')">Edit</button>'; // Moved the edit button back to the action column
+                        cell12.innerHTML = '<button class="view-task-button" onclick="showTaskDetailsPopup(\'' + task.id + '\')">+</button>'; // Added the "+" button to the new column
+                    });
+                } catch (error) {
+                    console.error('Error parsing JSON file:', error);
+                    alert('Error parsing JSON file. Please make sure the file is valid JSON format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // Fade out and remove the logo container after 2 seconds
+    setTimeout(function() {
+        var logoContainer = document.getElementById('logo-container');
+        logoContainer.style.opacity = 0;
+        setTimeout(function() {
+            logoContainer.remove();
+        }, 1000); // Wait for the fade out transition to complete
+    }, 2000);
+
+
+</script>
+</body>
+</html>
