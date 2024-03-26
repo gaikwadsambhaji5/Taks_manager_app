@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Office Task Manager</title>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Task Manager</title>
+    <style>
         #logo-container {
             position: fixed;
             top: 0;
@@ -290,17 +290,83 @@ button.edit-button[disabled] {
         z-index: 1000;
     }
 
+        .version-text {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 10px 0;
+	    color: gray;
+        }
+
+/* Dark Mode Styles */
+.dark-mode {
+    background-color: #222;
+    color: #fff;
+}
+
+/* Styles for containers */
+.container {
+    background-color: #fff; /* Light mode background color */
+    color: #333; /* Light mode text color */
+    /* Add any other styles you want for the container */
+}
+
+/* Styles for popups */
+.popup {
+    background-color: #fff; /* Light mode background color */
+    color: #333; /* Light mode text color */
+    /* Add any other styles you want for the popup */
+}
+
+/* Dark mode styles for containers */
+.dark-mode .container {
+    background-color: #333; /* Dark mode background color */
+    color: #fff; /* Dark mode text color */
+    /* Add any other styles you want for the container in dark mode */
+}
+
+/* Dark mode styles for popups */
+.dark-mode .popup {
+    background-color: #333; /* Dark mode background color */
+    color: #fff; /* Dark mode text color */
+    /* Add any other styles you want for the popup in dark mode */
+}
+
+/* Light mode styles for table header cells */
+th {
+    background-color: #f0f0f0; /* Light mode header cell background color */
+    color: #333; /* Light mode header cell text color */
+    /* Add any other styles you want for the table header cells */
+}
+
+/* Dark mode styles for table header cells */
+.dark-mode th {
+    background-color: #444; /* Dark mode header cell background color */
+    color: #fff; /* Dark mode header cell text color */
+    /* Add any other styles you want for the table header cells in dark mode */
+}
+
+/* Light mode styles */
+.container,
+.popup,
+th {
+    transition: background-color 0.3s ease, color 0.3s ease; /* Add smooth transition for background color and text color */
+}
+
 </style>
 </head>
 <body>
 
 <div id="logo-container">
-    <img id="company-logo" src="file:///C:\Users\SAMBHAJI\Desktop\New folder (2)\images\febtech_logo_red.svg">
+        <img id="company-logo" src="images/febtech_logo_red.svg">
 </div>
 
     <div class="search-bar-container">
         <input type="text" id="searchInput" class="search-input" placeholder="Search tasks">
         <button onclick="applySearch()" class="search-button">Search</button>
+        <button onclick="printTodaysTasks()">Print Today's Tasks</button>
     </div>
 
    <!-- Settings Icon (Three Dots) -->
@@ -318,6 +384,9 @@ button.edit-button[disabled] {
     </div>
 </div>
 
+    <div class="version-text">
+        V 0.1 (Beta)
+    </div>
 
     <!-- Settings Popup -->
     <div id="settingsPopup" class="settings-popup">
@@ -375,6 +444,10 @@ button.edit-button[disabled] {
     </div>
 </div>
 
+<input type="checkbox" id="darkModeToggle">
+<label for="darkModeToggle">Dark Mode</label>
+
+
 <!-- Popup for editing task details -->
 <div id="editTaskPopup" class="popup">
     <label for="editTitle">Task Title:</label>
@@ -402,6 +475,13 @@ button.edit-button[disabled] {
 
 <!-- Success message popup -->
 <div id="successMessage" class="success-message"></div>
+
+<div id="settingsPopup" class="popup">
+    <div id="darkModeSwitchContainer">
+        <input type="checkbox" id="darkModeToggle">
+        <label for="darkModeToggle">Dark Mode</label>
+    </div>
+</div>
 
 <script>
     var currentTaskId;
@@ -733,7 +813,7 @@ function printTaskDetails() {
     printWindow.document.write('</head><body>');
     printWindow.document.write('<div class="modal"><div class="modal-content">');
     // Include the company logo with an absolute file path
-    printWindow.document.write('<img src="C:\\Users\\SAMBHAJI\\Desktop\\New folder (2)\\images\\febtech_logo_red.svg" alt="Company Logo" class="logo" style="width: 200px; height: auto;">');
+    printWindow.document.write('<img src="images/febtech_logo_red.svg" alt="Company Logo" class="logo" style="width: 200px; height: auto;">');
     printWindow.document.write('<h3 style="text-align: center;">Task Details</h3>');
     printWindow.document.write('<table>');
     printWindow.document.write(taskDetailsContent);
@@ -879,6 +959,346 @@ function printTaskDetails() {
             logoContainer.remove();
         }, 1000); // Wait for the fade out transition to complete
     }, 2000);
+
+
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const body = document.body;
+
+    darkModeToggle.addEventListener('change', () => {
+        if (darkModeToggle.checked) {
+            body.classList.add('dark-mode');
+        } else {
+            body.classList.remove('dark-mode');
+        }
+    });
+
+// Object to track the current sorting order for each column
+var isSortedAscending = {
+    title: false,
+    assignee: false,
+    status: false,
+    startDate: false,
+    endDate: false,
+    timeConsumed: false,
+    priority: false,
+    addDateTime: false,
+    actions: false,
+    viewTask: false
+};
+
+// Add event listeners to the table headers of each column
+document.querySelector('#taskTable th:nth-child(3)').addEventListener('click', function() {
+    sortTasksByColumn('title', this);
+});
+
+document.querySelector('#taskTable th:nth-child(4)').addEventListener('click', function() {
+    sortTasksByColumn('assignee', this);
+});
+
+document.querySelector('#taskTable th:nth-child(5)').addEventListener('click', function() {
+    sortTasksByColumn('status', this);
+});
+
+document.querySelector('#taskTable th:nth-child(6)').addEventListener('click', function() {
+    sortTasksByColumn('startDate', this);
+});
+
+document.querySelector('#taskTable th:nth-child(7)').addEventListener('click', function() {
+    sortTasksByColumn('endDate', this);
+});
+
+document.querySelector('#taskTable th:nth-child(8)').addEventListener('click', function() {
+    sortTasksByColumn('timeConsumed', this);
+});
+
+document.querySelector('#taskTable th:nth-child(9)').addEventListener('click', function() {
+    sortTasksByColumn('priority', this);
+});
+
+document.querySelector('#taskTable th:nth-child(10)').addEventListener('click', function() {
+    sortTasksByColumn('addDateTime', this);
+});
+
+document.querySelector('#taskTable th:nth-child(11)').addEventListener('click', function() {
+    sortTasksByColumn('actions', this);
+});
+
+document.querySelector('#taskTable th:nth-child(12)').addEventListener('click', function() {
+    sortTasksByColumn('viewTask', this);
+});
+
+// Define a function to handle the sorting logic for all columns
+function sortTasksByColumn(column, header) {
+    var columnIndex;
+    switch (column) {
+        case 'title':
+            columnIndex = 2;
+            break;
+        case 'assignee':
+            columnIndex = 3;
+            break;
+        case 'status':
+            columnIndex = 4;
+            break;
+        case 'startDate':
+            columnIndex = 5;
+            break;
+        case 'endDate':
+            columnIndex = 6;
+            break;
+        case 'timeConsumed':
+            columnIndex = 7;
+            break;
+        case 'priority':
+            columnIndex = 8;
+            break;
+        case 'addDateTime':
+            columnIndex = 9;
+            break;
+        case 'actions':
+            columnIndex = 10;
+            break;
+        case 'viewTask':
+            columnIndex = 11;
+            break;
+        default:
+            return; // If the column is not recognized, exit the function
+    }
+
+    var table = document.getElementById('taskTable').getElementsByTagName('tbody')[0];
+    var rows = Array.from(table.rows);
+
+    rows.sort(function(a, b) {
+        var cellA = extractCellValue(a.cells[columnIndex]);
+        var cellB = extractCellValue(b.cells[columnIndex]);
+        if (cellA < cellB) return isSortedAscending[column] ? -1 : 1;
+        if (cellA > cellB) return isSortedAscending[column] ? 1 : -1;
+        return 0;
+    });
+
+    // Remove arrow icons from all table headers
+    var headers = document.querySelectorAll('#taskTable th');
+    headers.forEach(function(header) {
+        if (header.textContent.trim().toLowerCase() !== 'description' && header.textContent.trim().toLowerCase() !== 'actions') {
+            header.innerHTML = header.textContent.replace(/▲|▼/g, ''); // Remove existing arrow icons
+        }
+    });
+
+    rows.forEach(function(row) {
+        table.appendChild(row);
+    });
+
+    // Toggle arrow icon based on sorting order
+    var arrowIcon = isSortedAscending[column] ? '▲' : '▼';
+    if (header.textContent.trim().toLowerCase() !== 'description' && header.textContent.trim().toLowerCase() !== 'actions') {
+        header.innerHTML = header.textContent + ' ' + arrowIcon;
+    }
+
+    // Update sorting order
+    isSortedAscending[column] = !isSortedAscending[column];
+}
+
+// Function to extract the cell value (including dropdown values and links)
+function extractCellValue(cell) {
+    // If the cell contains a dropdown, return the selected value
+    var dropdown = cell.querySelector('select');
+    if (dropdown) {
+        return dropdown.options[dropdown.selectedIndex].text.toLowerCase();
+    } else {
+        // If the cell contains a link, return its href attribute
+        var link = cell.querySelector('a');
+        if (link) {
+            return link.getAttribute('href').toLowerCase();
+        } else {
+            // Otherwise, return the text content of the cell
+            return cell.textContent.trim().toLowerCase();
+        }
+    }
+}
+
+// Function to print today's added tasks based on the "Task Add Date and Time" with proper table format
+function printTodaysTasks() {
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+    var yyyy = today.getFullYear();
+    var formattedToday = yyyy + '-' + mm + '-' + dd;
+
+    var taskRows = document.querySelectorAll('#taskTable tbody tr');
+    var tasksAddedToday = [];
+
+    var totalWorkHours = 0;
+    var dailyTaskCount = 0;
+    var weeklyTaskCount = 0;
+    var completedTaskCount = 0;
+    var workingTaskCount = 0;
+    var notWorkingTaskCount = 0;
+    var priorityCounts = {
+        'Low': 0,
+        'Medium': 0,
+        'High': 0,
+        'Extremely High': 0
+    };
+    var statusCounts = {
+        'Not Working': 0,
+        'Working': 0,
+        'Completed': 0
+    };
+
+    taskRows.forEach(function(row) {
+        var taskAddDateTime = row.cells[10].textContent;
+        var taskAddDate = taskAddDateTime.split(' ')[0]; // Extracting the date part
+        if (taskAddDate === formattedToday) {
+            tasksAddedToday.push(row);
+
+            // Extract time consumed from the Time Consumed column
+            var timeConsumed = row.cells[8].textContent;
+            var timeParts = timeConsumed.split(':');
+            var hours = parseInt(timeParts[0], 10);
+            var minutes = parseInt(timeParts[1], 10);
+            totalWorkHours += hours + minutes / 60; // Convert minutes to hours and add to totalWorkHours
+
+            dailyTaskCount++;
+
+            // Counting tasks based on status dropdown
+            var status = row.cells[5].querySelector('select').value; // Get the value of the select dropdown
+            if (status === 'Not Working') {
+                notWorkingTaskCount++;
+            } else if (status === 'Working') {
+                workingTaskCount++;
+            } else if (status === 'Completed') {
+                completedTaskCount++;
+            }
+            // Increment status count
+            statusCounts[status]++;
+
+            // Counting tasks by priority
+            var priority = row.cells[9].querySelector('select').value;
+            priorityCounts[priority]++;
+        }
+        // Check if the task was added this week
+        var taskAddDateTimeObj = new Date(taskAddDateTime);
+        if (taskAddDateTimeObj >= getStartOfWeek() && taskAddDateTimeObj <= today) {
+            weeklyTaskCount++;
+        }
+    });
+
+    var averageDailyTasks = weeklyTaskCount / 7; // Assuming 7 days in a week
+
+    var printWindow = window.open('', '_blank');
+    printWindow.document.write('<html><head><title>Today\'s Tasks</title>');
+    printWindow.document.write('<style>table {border-collapse: collapse; width: 100%;} th, td {border: 1px solid #000000; text-align: left; padding: 10px;} th {background-color: #f2f2f2;} .container {width: 100%; margin: auto;} .small-column {width: 100px;} .narrow-table th, .narrow-table td {max-width: 200px; word-wrap: break-word;}</style>');
+    printWindow.document.write('</head><body>');
+
+    printWindow.document.write('<div class="container">');
+    printWindow.document.write('<img src="images/febtech_logo_red.svg" alt="Company Logo" style="display: block; margin: 50 auto; width: 200px;">');
+
+    printWindow.document.write('<h3>Today\'s Tasks</h3>');
+    printWindow.document.write('<table class="narrow-table">');
+    printWindow.document.write('<tr><th class="small-column">Task Number</th><th>ID</th><th>Title</th><th>Assignee</th><th>Description</th><th>Status</th><th>Start Date</th><th>End Date</th><th>Time Consumed</th><th>Priority</th><th>Add Date Time</th></tr>');
+    tasksAddedToday.forEach(function(row) {
+        printWindow.document.write('<tr>');
+        for (var i = 0; i < row.cells.length; i++) {
+            if (i !== 11 && i !== 12) {
+                var cellContent = row.cells[i].innerHTML;
+                if (i === 4 || i === 9) {
+                    var selectElement = row.cells[i].querySelector('select');
+                    if (selectElement) {
+                        cellContent = selectElement.options[selectElement.selectedIndex].text;
+                    }
+                }
+                if (i === 5) {
+                    var selectElement = row.cells[i].querySelector('select');
+                    if (selectElement) {
+                        cellContent = selectElement.options[selectElement.selectedIndex].text;
+                    }
+                }
+                if (i === 4) {
+                    var descriptionTextarea = row.cells[i].querySelector('textarea');
+                    if (descriptionTextarea) {
+                        cellContent = descriptionTextarea.value;
+                    } else {
+                        cellContent = ''; // Empty text if description is not added
+                    }
+                }
+                printWindow.document.write('<td>' + cellContent + '</td>');
+            }
+        }
+        printWindow.document.write('</tr>');
+    });
+    printWindow.document.write('</table>');
+
+    printWindow.document.write('<h3>Summary and Task Status Breakdown</h3>');
+    printWindow.document.write('<table class="narrow-table">');
+    printWindow.document.write('<tr><th>Summary</th><th>Count</th></tr>');
+    printWindow.document.write('<tr><td>Total work hours consumed today</td><td>' + (isNaN(totalWorkHours) ? '00' : totalWorkHours.toFixed(2)) + '</td></tr>');
+    printWindow.document.write('<tr><td>Average daily tasks performed</td><td>' + averageDailyTasks.toFixed(2) + '</td></tr>');
+    printWindow.document.write('<tr><td>Completed tasks today</td><td>' + completedTaskCount + '</td></tr>');
+    printWindow.document.write('<tr><td>Working tasks today</td><td>' + workingTaskCount + '</td></tr>');
+    printWindow.document.write('<tr><td>Not working tasks today</td><td>' + notWorkingTaskCount + '</td></tr>');
+    printWindow.document.write('<tr><td>Total tasks added today</td><td>' + dailyTaskCount + '</td></tr>');
+    printWindow.document.write('<tr><td>Total tasks added this week</td><td>' + weeklyTaskCount + '</td></tr>');
+
+    // Priority breakdown
+    for (var priority in priorityCounts) {
+        printWindow.document.write('<tr><td>' + priority + ' priority tasks</td><td>' + priorityCounts[priority] + '</td></tr>');
+    }
+
+    // Task Status Breakdown
+    for (var status in statusCounts) {
+        printWindow.document.write('<tr><td>' + status + ' tasks</td><td>' + statusCounts[status] + '</td></tr>');
+    }
+
+    printWindow.document.write('</table>');
+    printWindow.document.write('</div>');
+
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+}
+
+// Function to get the start of the current week
+function getStartOfWeek() {
+    var today = new Date();
+    var dayOfWeek = today.getDay();
+    var startOfWeek = new Date(today); // Clone the date object
+    startOfWeek.setDate(today.getDate() - dayOfWeek); // Move back to the start of the week (Sunday)
+    startOfWeek.setHours(0, 0, 0, 0); // Set hours to 00:00:00
+    return startOfWeek;
+}
+
+
+taskRows.forEach(function(row) {
+    var taskAddDateTime = row.cells[10].textContent;
+    var taskAddDate = taskAddDateTime.split(' ')[0]; // Extracting the date part
+    if (taskAddDate === formattedToday) {
+        tasksAddedToday.push(row);
+
+        // Extract time consumed from the Time Consumed column
+        var timeConsumed = row.cells[8].textContent;
+        var timeParts = timeConsumed.split(':');
+        var hours = parseInt(timeParts[0], 10);
+        var minutes = parseInt(timeParts[1], 10);
+        totalWorkHours += hours + minutes / 60; // Convert minutes to hours and add to totalWorkHours
+
+        dailyTaskCount++;
+
+        // Counting tasks based on status dropdown
+        var status = row.cells[5].querySelector('select').value; // Get the value of the select dropdown
+        if (status === 'Not Working') {
+            notWorkingTaskCount++;
+        } else if (status === 'Working') {
+            workingTaskCount++;
+        } else if (status === 'Completed') {
+            completedTaskCount++;
+        }
+    }
+    // Check if the task was added this week
+    var taskAddDateTimeObj = new Date(taskAddDateTime);
+    if (taskAddDateTimeObj >= getStartOfWeek() && taskAddDateTimeObj <= today) {
+        weeklyTaskCount++;
+    }
+});
+
 
 
 </script>
