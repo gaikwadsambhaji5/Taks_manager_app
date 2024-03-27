@@ -353,18 +353,31 @@ th {
 .popup,
 th {
     transition: background-color 0.3s ease, color 0.3s ease; /* Add smooth transition for background color and text color */
+
+}/* Light mode styles */
+#dateTimeDisplay.light-mode {
+    background-color: #f9f9f9;
+    color: #000; /* Set text color */
 }
-        #dateTimeDisplay {
-            position: absolute;
-            top: 3.5%;
-            right: 4%;
-            font-family: Arial, sans-serif; /* Optional: Set font family */
-            font-size: 17px; /* Optional: Set font size */
-            border: 1px solid #ccc; /* Add border */
-            padding: 5px 10px; /* Add padding */
-            background-color: #f9f9f9; /* Optional: Add background color */
-            border-radius: 5px; /* Optional: Add border radius for rounded corners */
-        }
+
+/* Dark mode styles */
+#dateTimeDisplay.dark-mode {
+    background-color: #333; /* Change background color for dark mode */
+    color: #fff; /* Set text color for dark mode */
+}
+
+/* Common styles for both modes */
+#dateTimeDisplay {
+    position: absolute;
+    top: 3.5%;
+    right: 4%;
+    font-family: Arial, sans-serif; /* Optional: Set font family */
+    font-size: 17px; /* Optional: Set font size */
+    border: 1px solid #ccc; /* Add border */
+    padding: 5px 10px; /* Add padding */
+    border-radius: 5px; /* Optional: Add border radius for rounded corners */
+}
+
 
         progress {
             width: 100%;
@@ -550,6 +563,13 @@ th {
         cell11.innerHTML = '<button onclick="openEditPopup(\'' + id + '\')">Edit</button>'; // Moved the edit button back to the action column
         cell12.innerHTML = '<button class="view-task-button" onclick="showTaskDetailsPopup(\'' + id + '\')">+</button>'; // Added the "+" button to the new column
     }
+
+// JavaScript code for toggling dark mode
+function toggleDarkMode() {
+    var dateTimeDisplay = document.getElementById('dateTimeDisplay');
+    dateTimeDisplay.classList.toggle('dark-mode');
+}
+
         // Function to update date and time
         function updateDateTime() {
             var now = new Date();
