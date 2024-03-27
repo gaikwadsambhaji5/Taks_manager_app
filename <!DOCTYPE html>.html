@@ -355,6 +355,14 @@ th {
     transition: background-color 0.3s ease, color 0.3s ease; /* Add smooth transition for background color and text color */
 }
 
+#datetime-container {
+    width: 350px;
+    height: 10px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
 </style>
 </head>
 <body>
@@ -367,6 +375,7 @@ th {
         <input type="text" id="searchInput" class="search-input" placeholder="Search tasks">
         <button onclick="applySearch()" class="search-button">Search</button>
         <button onclick="printTodaysTasks()">Print Today's Tasks</button>
+	<div id="datetime-container"></div>
     </div>
 
    <!-- Settings Icon (Three Dots) -->
@@ -1298,6 +1307,18 @@ taskRows.forEach(function(row) {
         weeklyTaskCount++;
     }
 });
+
+function updateDateTime() {
+    var now = new Date();
+    var dateTimeString = now.toLocaleString(); // Adjust formatting as per your requirement
+    document.getElementById("datetime-container").textContent = dateTimeString;
+}
+
+// Call the function initially to set the date and time
+updateDateTime();
+
+// Update date and time every second
+setInterval(updateDateTime, 1000);
 
 
 
