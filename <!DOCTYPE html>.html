@@ -354,6 +354,23 @@ th {
 th {
     transition: background-color 0.3s ease, color 0.3s ease; /* Add smooth transition for background color and text color */
 }
+        #dateTimeDisplay {
+            position: absolute;
+            top: 3.5%;
+            right: 4%;
+            font-family: Arial, sans-serif; /* Optional: Set font family */
+            font-size: 17px; /* Optional: Set font size */
+            border: 1px solid #ccc; /* Add border */
+            padding: 5px 10px; /* Add padding */
+            background-color: #f9f9f9; /* Optional: Add background color */
+            border-radius: 5px; /* Optional: Add border radius for rounded corners */
+        }
+
+        progress {
+            width: 100%;
+            height: 10px;
+            margin-top: 0px;
+        }
 
 </style>
 </head>
@@ -372,7 +389,7 @@ th {
    <!-- Settings Icon (Three Dots) -->
     <div class="settings-icon" onclick="openSettingsPopup()">
         <!-- Three dots symbol -->
-        ...
+       ⋮
     </div>
 
 <!-- Popup for task details -->
@@ -409,6 +426,10 @@ th {
         </select>
         <button type="button" onclick="addTask()">Add Task</button>
     </form>
+        <div id="dateTimeDisplay">
+            <div id="dateTimeDisplay"></div>
+        </div>
+
     <table id="taskTable">
         <thead>
             <tr>
@@ -529,6 +550,66 @@ th {
         cell11.innerHTML = '<button onclick="openEditPopup(\'' + id + '\')">Edit</button>'; // Moved the edit button back to the action column
         cell12.innerHTML = '<button class="view-task-button" onclick="showTaskDetailsPopup(\'' + id + '\')">+</button>'; // Added the "+" button to the new column
     }
+        // Function to update date and time
+        function updateDateTime() {
+            var now = new Date();
+            var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+            // Format date
+            var formattedDate = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+
+            // Format time
+            var hours = now.getHours();
+            var minutes = now.getMinutes();
+            var seconds = now.getSeconds();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Handle midnight (0 hours)
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            var formattedTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+
+            // Calculate remaining working hours
+            var workingStartTime = 9; // Start of working hours (9 AM)
+            var workingEndTime = 19; // End of working hours (7 PM)
+            var currentHour = now.getHours();
+            var remainingHours = Math.max(0, workingEndTime - currentHour);
+            var remainingMinutes = Math.max(0, 60 - now.getMinutes());
+            var remainingSeconds = Math.max(0, 60 - now.getSeconds());
+
+            // Adjust remaining hours if minutes or seconds overflow
+            if (remainingMinutes >= 60) {
+                remainingHours -= 1;
+                remainingMinutes -= 60;
+            }
+            if (remainingSeconds >= 60) {
+                remainingMinutes -= 1;
+                remainingSeconds -= 60;
+            }
+
+            // Format remaining time
+            var formattedRemainingTime = remainingHours.toString().padStart(2, '0') + ':' + 
+                                          remainingMinutes.toString().padStart(2, '0') + ':' + 
+                                          remainingSeconds.toString().padStart(2, '0');
+
+            // Update progress bar value
+            var totalWorkingHours = workingEndTime - workingStartTime;
+            var progressBarValue = ((totalWorkingHours - remainingHours) / totalWorkingHours) * 100;
+
+            // Display date, time, remaining working hours, and progress bar
+            var dateTimeDisplay = formattedDate + ' | ' + formattedTime + '<br>RWH: ' + formattedRemainingTime +
+                                  '<progress value="' + progressBarValue + '" max="100"></progress>';
+            document.getElementById('dateTimeDisplay').innerHTML = dateTimeDisplay;
+        }
+
+        // Update date and time every second
+        setInterval(updateDateTime, 1000);
+
+        // Initial call to update date and time
+        updateDateTime();
+
+
 
 function openEditPopup(taskId) {
     currentTaskId = taskId; // Store the current task ID
@@ -1298,8 +1379,6 @@ taskRows.forEach(function(row) {
         weeklyTaskCount++;
     }
 });
-
-
 
 </script>
 </body>
