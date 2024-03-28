@@ -385,23 +385,6 @@ th {
             margin-top: 0px;
         }
 
-.popup {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    background-color: #fff;
-}
-
-.popup h2 {
-    margin-top: 0;
-}
-
-
 </style>
 </head>
 <body>
@@ -460,15 +443,6 @@ th {
             <div id="dateTimeDisplay"></div>
         </div>
 
-<button id="scheduleTaskButton">Schedule Task</button>
-
-<div id="scheduleTaskPopup" class="popup">
-    <h2>Schedule Task</h2>
-    <input type="text" id="taskName" placeholder="Task Name">
-    <input type="datetime-local" id="taskDateTime">
-    <button onclick="addScheduledTask()">Schedule</button>
-    <button onclick="closeScheduleTaskPopup()">Cancel</button>
-</div>
     <table id="taskTable">
         <thead>
             <tr>
@@ -590,48 +564,11 @@ th {
         cell12.innerHTML = '<button class="view-task-button" onclick="showTaskDetailsPopup(\'' + id + '\')">+</button>'; // Added the "+" button to the new column
     }
 
-document.getElementById('scheduleTaskButton').addEventListener('click', function() {
-    document.getElementById('scheduleTaskPopup').style.display = 'block';
-});
-
-function addScheduledTask() {
-    var taskName = document.getElementById('taskName').value;
-    var taskDateTime = document.getElementById('taskDateTime').value;
-    
-    // Create a new row for the table
-    var table = document.getElementById('taskTable').getElementsByTagName('tbody')[0];
-    var newRow = table.insertRow();
-    
-    // Insert cells for each column in the table
-    var titleCell = newRow.insertCell(0); // Task No.
-    var idCell = newRow.insertCell(1); // ID
-    var taskTitleCell = newRow.insertCell(2); // Task Title
-    var assigneeCell = newRow.insertCell(3); // Assignee
-    var descriptionCell = newRow.insertCell(4); // Description
-    var statusCell = newRow.insertCell(5); // Status
-    var startDateTimeCell = newRow.insertCell(6); // Start Date and Time
-    var endDateTimeCell = newRow.insertCell(7); // End Date and Time
-    var timeConsumedCell = newRow.insertCell(8); // Time Consumed
-    var priorityCell = newRow.insertCell(9); // Priority
-    var addDateTimeCell = newRow.insertCell(10); // Task Add Date and Time
-    
-    // Set the innerHTML of the cells
-    titleCell.innerHTML = ''; // Set Task No. as per your requirement
-    idCell.innerHTML = ''; // Set ID as per your requirement
-    taskTitleCell.innerHTML = taskName;
-    assigneeCell.innerHTML = ''; // Set Assignee as per your requirement
-    descriptionCell.innerHTML = ''; // Set Description as per your requirement
-    statusCell.innerHTML = ''; // Set Status as per your requirement
-    startDateTimeCell.innerHTML = ''; // Set Start Date and Time as per your requirement
-    endDateTimeCell.innerHTML = ''; // Set End Date and Time as per your requirement
-    timeConsumedCell.innerHTML = ''; // Set Time Consumed as per your requirement
-    priorityCell.innerHTML = ''; // Set Priority as per your requirement
-    addDateTimeCell.innerHTML = ''; // Set Task Add Date and Time as per your requirement
-    
-    // Close the popup/modal after scheduling the task
-    closeScheduleTaskPopup();
+// JavaScript code for toggling dark mode
+function toggleDarkMode() {
+    var dateTimeDisplay = document.getElementById('dateTimeDisplay');
+    dateTimeDisplay.classList.toggle('dark-mode');
 }
-
 
         // Function to update date and time
         function updateDateTime() {
